@@ -35,90 +35,129 @@ type XComputerState = (X,Y,FLAG,AC,COUNT,PC,IR,ADDR,MEM)
 type Step m = StateT XComputerState m
 
 
-loadXfromAC :: (Monad m) => Step m ()
-loadXfromAC = do
+incrementCount :: (Monad m) => Step m ()
+incrementCount = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (ac,y,flag,ac,count,pc,ir,addr,mem)
+  put (x,y,flag,ac, count + 1 ,pc,ir,addr,mem)
 
-loadYfromMEM :: (Monad m) => Step m ()
-loadYfromMEM = do
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x, mem ! addr ,flag,ac,count,pc,ir,addr,mem)
-
-loadYfromIR :: (Monad m) => Step m ()
-loadYfromIR = do 
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,ir,flag,ac,count,pc,ir,addr,mem)
-
-loadACfromMEM :: (Monad m) => Step m ()
-loadACfromMEM = do
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag,mem ! addr,count,pc,ir,addr,mem)
-
-loadACfromIR :: (Monad m) => Step m ()
-loadACfromIR = do
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag,ir,count,pc,ir,addr,mem)
-
-incrementAC :: (Monad m) => Step m ()
-incrementAC = do
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag, ac+1 ,count,pc,ir,addr,mem)
-
-decrementAC :: (Monad m) => Step m ()
-decrementAC = do
-  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag, ac - 1 ,count,pc,ir,addr,mem)
 
 setCountToZero :: (Monad m) => Step m ()
 setCountToZero = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   put (x,y,flag,ac,0,pc,ir,addr,mem)
 
-incrementCount :: (Monad m) => Step m ()
-incrementCount = do
+
+------------------------------------------------
+------------------------------------------------
+
+loadXfromAC :: (Monad m) => Step m ()
+loadXfromAC = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag,ac, count + 1 ,pc,ir,addr,mem)
+  put (ac,y,flag,ac,count,pc,ir,addr,mem)
+  incrementCount
+
+loadYfromMEM :: (Monad m) => Step m ()
+loadYfromMEM = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x, mem ! addr ,flag,ac,count,pc,ir,addr,mem)
+  incrementCount
+
+loadYfromIR :: (Monad m) => Step m ()
+loadYfromIR = do 
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,ir,flag,ac,count,pc,ir,addr,mem)
+  incrementCount
+
+
+loadACfromALU :: (Monad m) => Word16 -> Step m ()
+loadACfromALU w = do 
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,flag,w,count,pc,ir,addr,mem)
+  incrementCount
+
+
+loadACfromMEM :: (Monad m) => Step m ()
+loadACfromMEM = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,flag,mem ! addr,count,pc,ir,addr,mem)
+  incrementCount
+
+loadACfromIR :: (Monad m) => Step m ()
+loadACfromIR = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,flag,ir,count,pc,ir,addr,mem)
+  incrementCount
+
+
+incrementAC :: (Monad m) => Step m ()
+incrementAC = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,flag, ac+1 ,count,pc,ir,addr,mem)
+  incrementCount
+
+
+decrementAC :: (Monad m) => Step m ()
+decrementAC = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,flag, ac - 1 ,count,pc,ir,addr,mem)
+  incrementCount
+
+loadFLAGfromALU :: (Monad m) => Word1 -> Step m ()
+loadFLAGfromALU b = do
+  (x,y,flag,ac,count,pc,ir,addr,mem) <- get
+  put (x,y,b,ac,count,pc,ir,addr,mem)
+  incrementCount
 
 loadPCfromIR :: (Monad m) => Step m ()
 loadPCfromIR = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   let (_,pc') = splitIR ir
   put (x,y,flag,ac,count, pc' ,ir,addr,mem)
+  incrementCount
+
 
 loadPCfromMEM :: (Monad m) => Step m ()
 loadPCfromMEM = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   let (_,pc') = splitIR $ mem ! addr
   put (x,y,flag,ac,count, pc' ,ir,addr,mem)
+  incrementCount
+
 
 incrementPC :: (Monad m) => Step m ()
 incrementPC = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   put (x,y,flag,ac,count, pc + 1,ir,addr,mem)
+  incrementCount
+
 
 loadIRfromMEM :: (Monad m) => Step m ()
 loadIRfromMEM = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   put (x,y,flag,ac,count,pc, mem ! addr ,addr,mem)
+  incrementCount
+
 
 loadADDRfromPC :: (Monad m) => Step m ()
 loadADDRfromPC = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   put (x,y,flag,ac,count,pc,ir,pc,mem)
+  incrementCount
+
 
 loadADDRfromIR :: (Monad m) => Step m ()
 loadADDRfromIR = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   let (_,addr') = splitIR ir
   put (x,y,flag,ac,count,pc,ir, addr' ,mem)
+  incrementCount
 
 loadADDRfromY :: (Monad m) => Step m ()
 loadADDRfromY = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
   let (_,addr') = splitIR y
   put (x,y,flag,ac,count,pc,ir, addr' ,mem)
-
+  incrementCount
 
 ---------------------------------------------------------
 ---------------------------------------------------------
