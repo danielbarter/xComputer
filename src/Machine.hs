@@ -1,5 +1,20 @@
-module Machine where
+module Machine (
+               X,
+               Y,
+               FLAG,
+               AC,
+               COUNT,
+               PC,
+               IR,
+               ADDR,
+               MEM,
+               Instruction,
+               XComputerState,
+               Step,
+               cycle
+               ) where
 
+import Prelude hiding (cycle)
 import Data.Word.Odd
 import Data.Word
 import Data.Map
@@ -22,6 +37,11 @@ splitIR :: Word16 -> (Word6,Word10)
 splitIR ir = (sum $ convert <$> (zip [5,4..0] bits6), sum $ convert <$> (zip [9,8..0] bits10) )
   where (bits6,bits10) = splitAt 6 $ testBit ir <$> [15,14..0]
         convert (i,b) = if b then 2^i else 0
+
+
+word10toword16 :: Word10 -> Word16
+word10toword16 w = sum $ convert  <$> zip [9,8..0] (testBit w <$> [9,8..0])
+  where convert (i,b) = if b then 2^i else 0
 
 
 -- main memory
@@ -166,7 +186,7 @@ execute i = case i of ADD -> do loadADDRfromIR
 
 
 cycle :: (Monad m) => Step m Instruction
-cycle = fetch >>= execute
+cycle = setCountToZero >> fetch >>= execute
 
 -------------------------------------------------
 -------------------------------------------------
