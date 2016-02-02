@@ -66,6 +66,23 @@ data Instruction = ADD
                  | JMN
                  | JMF
 
+                 | ADDC
+                 | SUBC
+                 | ANDC
+                 | ORC
+                 | LODC
+
+                 | ADDI
+                 | SUBI
+                 | ANDI
+                 | ORI
+                 | LODI
+                 | STOI
+                 | JMPI
+                 | JMZI
+                 | JMNI
+                 | JMFI deriving (Show, Eq)
+
 translate :: Word6 -> Instruction
 translate n = case n of 0  -> ADD
                         1  -> SUB
@@ -83,6 +100,22 @@ translate n = case n of 0  -> ADD
                         13 -> JMZ
                         14 -> JMN
                         15 -> JMF
+                        16 -> ADDC
+                        17 -> SUBC
+                        18 -> ANDC
+                        19 -> ORC
+                        25 -> LODC
+                        32 -> ADDI
+                        33 -> SUBI
+                        34 -> ANDI
+                        35 -> ORI
+                        41 -> LODI
+                        42 -> STOI
+                        44 -> JMPI
+                        45 -> JMZI
+                        46 -> JMNI
+                        47 -> JMFI
+                        
                         _  -> HLT -- unrecognized instructions sent to HLT
 
 type XComputerState = (X,Y,FLAG,AC,COUNT,PC,IR,ADDR,MEM)
@@ -105,84 +138,197 @@ fetch = do
 
 -- needs refactoring really bad
 execute :: (Monad m) => Instruction -> Step m Instruction
-execute i = case i of ADD -> do loadADDRfromIR
-                                loadXfromAC
-                                loadYfromMEM
-                                (carry,sum) <- aluADD
-                                loadACfromALU sum
-                                loadFLAGfromALU carry
-                                return i
+execute i = case i of ADD ->  do loadADDRfromIR
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (carry,sum) <- aluADD
+                                 loadACfromALU sum
+                                 loadFLAGfromALU carry
+                                 return i
 
-                      SUB -> do loadADDRfromIR
-                                loadXfromAC
-                                loadYfromMEM
-                                (flag,dif) <- aluSUB
-                                loadACfromALU dif
-                                loadFLAGfromALU flag
-                                return i
+                      SUB ->  do loadADDRfromIR
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,dif) <- aluSUB
+                                 loadACfromALU dif
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      AND -> do loadADDRfromIR
-                                loadXfromAC
-                                loadYfromMEM
-                                (flag,ac) <- aluAND
-                                loadACfromALU ac
-                                loadFLAGfromALU flag
-                                return i
+                      AND ->  do loadADDRfromIR
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,ac) <- aluAND
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      OR  -> do loadADDRfromIR
-                                loadXfromAC
-                                loadYfromMEM
-                                (flag,ac) <- aluOR
-                                loadACfromALU ac
-                                loadFLAGfromALU flag
-                                return i
+                      OR  ->  do loadADDRfromIR
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,ac) <- aluOR
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      NOT -> do loadXfromAC
-                                (flag,ac) <- aluNOT
-                                loadACfromALU ac
-                                loadFLAGfromALU flag
-                                return i
+                      NOT ->  do loadXfromAC
+                                 (flag,ac) <- aluNOT
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      SHL -> do loadXfromAC
-                                (flag,ac) <- aluSHL
-                                loadACfromALU ac
-                                loadFLAGfromALU flag
-                                return i
+                      SHL ->  do loadXfromAC
+                                 (flag,ac) <- aluSHL
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      SHR -> do loadXfromAC
-                                (flag,ac) <- aluSHR
-                                loadACfromALU ac
-                                loadFLAGfromALU flag
-                                return i
+                      SHR ->  do loadXfromAC
+                                 (flag,ac) <- aluSHR
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
 
-                      INC -> do incrementAC
-                                return i
+                      INC ->  do incrementAC
+                                 return i
 
-                      DEC -> do decrementAC
-                                return i
+                      DEC ->  do decrementAC
+                                 return i
 
-                      LOD -> do loadADDRfromIR
-                                loadACfromMEM
-                                return i
+                      LOD ->  do loadADDRfromIR
+                                 loadACfromMEM
+                                 return i
 
-                      STO -> do loadADDRfromIR
-                                loadMEMfromAC
-                                return i
+                      STO ->  do loadADDRfromIR
+                                 loadMEMfromAC
+                                 return i
                                                                 
-                      HLT -> do incrementCount 
-                                return i
+                      HLT ->  do incrementCount 
+                                 return i
 
-                      JMP -> do loadPCfromIR
-                                return i
+                      JMP ->  do loadPCfromIR
+                                 return i
 
-                      JMZ -> do b <- acZero
-                                if b then loadPCfromIR >> (return i) else (return i)
+                      JMZ ->  do b <- acZero
+                                 if b then loadPCfromIR >> (return i) else (return i)
 
-                      JMN -> do b <- acNegative
-                                if b then loadPCfromIR >> (return i) else (return i)
+                      JMN ->  do b <- acNegative
+                                 if b then loadPCfromIR >> (return i) else (return i)
 
-                      JMF -> do b <- flagSet
-                                if b then loadPCfromIR >> (return i) else (return i)
+                      JMF ->  do b <- flagSet
+                                 if b then loadPCfromIR >> (return i) else (return i)
+
+                      ADDC -> do loadXfromAC
+                                 loadYfromIR
+                                 (carry,sum) <- aluADD
+                                 loadACfromALU sum
+                                 loadFLAGfromALU carry
+                                 return i
+
+                      SUBC -> do loadXfromAC
+                                 loadYfromIR
+                                 (flag,dif) <- aluSUB
+                                 loadACfromALU dif
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      ANDC -> do loadXfromAC
+                                 loadYfromIR
+                                 (flag,ac) <- aluAND
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      ORC  -> do loadXfromAC
+                                 loadYfromIR
+                                 (flag,ac) <- aluOR
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      LODC -> do loadACfromIR
+                                 return i
+
+                      ADDI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (carry,sum) <- aluADD
+                                 loadACfromALU sum
+                                 loadFLAGfromALU carry
+                                 return i
+
+                      SUBI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,ac) <- aluSUB
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      ANDI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,ac) <- aluAND
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      ORI  -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadXfromAC
+                                 loadYfromMEM
+                                 (flag,ac) <- aluOR
+                                 loadACfromALU ac
+                                 loadFLAGfromALU flag
+                                 return i
+
+                      LODI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadACfromMEM
+                                 return i
+
+                      STOI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadMEMfromAC
+                                 return i
+
+                      JMPI -> do loadADDRfromIR
+                                 loadYfromMEM
+                                 loadADDRfromY
+                                 loadPCfromMEM
+                                 return i
+
+                      JMZI -> do b <- acZero
+                                 if b then do loadADDRfromIR
+                                              loadYfromMEM
+                                              loadADDRfromY
+                                              loadPCfromMEM
+                                              return i
+                                      else return i
+
+                      JMNI -> do b <- acNegative
+                                 if b then do loadADDRfromIR
+                                              loadYfromMEM
+                                              loadADDRfromY
+                                              loadPCfromMEM
+                                              return i
+                                      else return i
+
+                      JMFI -> do b <- flagSet
+                                 if b then do loadADDRfromIR
+                                              loadYfromMEM
+                                              loadADDRfromY
+                                              loadPCfromMEM
+                                              return i
+                                      else return i
 
 
 cycle :: (Monad m) => Step m Instruction
@@ -221,7 +367,8 @@ loadYfromMEM = do
 loadYfromIR :: (Monad m) => Step m ()
 loadYfromIR = do 
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,ir,flag,ac,count,pc,ir,addr,mem)
+  let (_,y') = splitIR ir
+  put (x, word10toword16 y'  ,flag,ac,count,pc,ir,addr,mem)
   incrementCount
 
 
@@ -248,7 +395,8 @@ loadMEMfromAC = do
 loadACfromIR :: (Monad m) => Step m ()
 loadACfromIR = do
   (x,y,flag,ac,count,pc,ir,addr,mem) <- get
-  put (x,y,flag,ir,count,pc,ir,addr,mem)
+  let (_,ac') = splitIR ir
+  put (x,y,flag, word10toword16 ac' ,count,pc,ir,addr,mem)
   incrementCount
 
 incrementAC :: (Monad m) => Step m ()
