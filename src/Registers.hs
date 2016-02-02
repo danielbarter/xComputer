@@ -18,21 +18,79 @@ type IR    = Word16
 type ADDR  = Word10
 
 
-
 splitIR :: Word16 -> (Word6,Word10)
 splitIR ir = (sum $ convert <$> (zip [5,4..0] bits6), sum $ convert <$> (zip [9,8..0] bits10) )
   where (bits6,bits10) = splitAt 6 $ testBit ir <$> [15,14..0]
         convert (i,b) = if b then 2^i else 0
 
 
-
 -- main memory
 type MEM = Map Word10 Word16
 
+type InstructionCode = Word6
+
+data Instruction = ADD
+                 | SUB
+                 | AND
+                 | OR
+                 | NOT
+                 | SHL
+                 | SHR
+                 | INC
+                 | DEC
+                 | LOD
+                 | STO
+                 | HLT
+                 | JMP
+                 | JMZ
+                 | JMN
+                 | JMF
+
+
+translate :: Word6 -> Maybe Instruction
+translate n = case n of 0  -> Just ADD
+                        1  -> Just SUB
+                        2  -> Just AND
+                        3  -> Just OR
+                        4  -> Just NOT
+                        5  -> Just SHL
+                        6  -> Just SHR
+                        7  -> Just INC
+                        8  -> Just DEC
+                        9  -> Just LOD
+                        10 -> Just STO
+                        11 -> Just HLT
+                        12 -> Just JMP
+                        13 -> Just JMZ
+                        14 -> Just JMN
+                        15 -> Just JMF
+                        _  -> Nothing
+                        
 
 type XComputerState = (X,Y,FLAG,AC,COUNT,PC,IR,ADDR,MEM)
 
 type Step m = StateT XComputerState m
+
+
+------------------------------------------------
+------------------------------------------------
+
+
+fetch :: (Monad m) => Step m (Maybe Instruction)
+fetch = do
+  loadADDRfromPC
+  loadIRfromMEM
+  incrementPC
+  s <- get
+  let (instruction,_) = splitIR $ pIR s
+  return $ translate instruction
+
+
+
+
+-------------------------------------------------
+-------------------------------------------------
+
 
 
 incrementCount :: (Monad m) => Step m ()
@@ -47,8 +105,8 @@ setCountToZero = do
   put (x,y,flag,ac,0,pc,ir,addr,mem)
 
 
-------------------------------------------------
-------------------------------------------------
+-------------------------------------------------
+-------------------------------------------------
 
 loadXfromAC :: (Monad m) => Step m ()
 loadXfromAC = do
