@@ -1,6 +1,6 @@
 module Main where
 
-import Registers
+import Machine
 
 main :: IO ()
 main = do
