@@ -1,0 +1,22 @@
+name:                xComputer
+version:             0.1.0.0
+synopsis:            Simulator for David Eck's xComputer
+description:         Please see README.md
+homepage:            http://github.com/danielbarter/xComputer
+license:             BSD3
+license-file:        LICENSE
+author:              Daniel Barter
+maintainer:          danielbarter@gmail.com
+copyright:           2016 Daniel Barter
+category:            Simulation
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable xComputer
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       OddWord == 1.0.1.0,
+                       containers == 0.*,
+                       mtl >= 2.0 && < 3.0
