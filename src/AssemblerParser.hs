@@ -1,5 +1,7 @@
-module Assembler (
-                 assemblerParser
+module AssemblerParser (
+                 assemblerParser,
+                 Operand(..),
+                 ASM(..)
                  ) where
 
 import Text.Parsec

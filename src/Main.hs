@@ -3,7 +3,8 @@
 module Main where
 
 import Machine
-import Assembler
+import AssemblerParser
+import AssemblerTranslator
 import Text.Parsec (parse)
 
 parseTest :: IO ()
