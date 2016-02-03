@@ -3,10 +3,8 @@
 module Main where
 
 import Machine
-import Prelude hiding (cycle)
-import Control.Monad.State.Lazy
-import Data.Map
-import Data.Word
+import Assembler
+
 
 main :: IO ()
 main = do
