@@ -9,7 +9,8 @@ import Text.Parsec (parse)
 
 parseTest :: IO ()
 parseTest = do s <- readFile "programs/multiply.xasm"
-               let p = parse assemblerParser "" s
-               putStrLn $ show p
+               let o = parse assemblerParser "" s
+               case o of Left e  -> putStrLn $ show e
+                         Right p -> putStrLn $ show $ produceMemoryMap p 0
 
 main = parseTest

@@ -13,7 +13,7 @@ import Machine (Instruction)
 -- label references are lower case
 -- label definitions are .lowercase
 
-data Operand = Label String | Lit Int deriving Show
+data Operand = Label String | Lit Int deriving (Eq, Show, Ord)
 data ASM = Op Instruction (Maybe Operand) | LabelDef String | ASMdata deriving Show
 
 assemblerSyntax :: T.LanguageDef ()
