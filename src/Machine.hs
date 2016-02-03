@@ -90,7 +90,7 @@ data Instruction = ADD    -- 0b000000
                  | JMZI   -- 0b101101
                  | JMNI   -- 0b101110
                  | JMFI   -- 0b101111
-                      deriving (Show, Eq)
+                      deriving (Show, Eq, Read)
 
 translate :: Word6 -> Instruction
 translate n = case n of 0b000000  -> ADD

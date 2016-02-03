@@ -1,0 +1,23 @@
+LODC  100
+STO   num
+LODC  0
+STO   ans
+
+.loop
+LOD  ans
+ADD  num
+STO  ans
+LOD  num
+DEC
+JMZ  done
+STO  num
+JMP  loop
+
+.done
+HLT
+
+.num
+DATA
+
+.ans
+DATA

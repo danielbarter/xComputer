@@ -19,4 +19,5 @@ executable xComputer
   build-depends:       base >= 4.7 && < 5,
                        OddWord == 1.0.1.0,
                        containers == 0.*,
-                       mtl >= 2.0 && < 3.0
+                       mtl >= 2.0 && < 3.0,
+                       parsec == 3.*
