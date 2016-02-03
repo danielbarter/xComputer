@@ -11,8 +11,8 @@ import Machine (Instruction)
 -- label references are lower case
 -- label definitions are .lowercase
 
-data ASM = Op Instruction | Label String | LabelDef String | Lit Int | ASMdata
-  deriving Show
+data Operand = Label String | Lit Int deriving Show
+data ASM = Op Instruction (Maybe Operand) | LabelDef String | ASMdata deriving Show
 
 assemblerSyntax :: T.LanguageDef ()
 assemblerSyntax = T.LanguageDef {
@@ -20,28 +20,38 @@ assemblerSyntax = T.LanguageDef {
   T.commentEnd      = "}",
   T.commentLine     = "//",
   T.nestedComments  = False,
-  T.identStart      = C.lower <|> (C.char '.'),
+  T.identStart      = C.lower,
   T.identLetter     = C.lower,
-  T.opStart         = C.upper,
-  T.opLetter        = C.upper,
+  T.opStart         = C.upper <|> (char '.'),
+  T.opLetter        = C.upper <|> C.lower,
   T.reservedNames   = [],
-  T.reservedOpNames = ["DATA"],
+  T.reservedOpNames = [],
   T.caseSensitive   = True
   }
 
-handleLabel s = if (head s == '.') then LabelDef $ tail s
-                             else Label s
 
 
 assemblerLexer = T.makeTokenParser assemblerSyntax
 
-identifier = handleLabel      <$> T.identifier assemblerLexer
-operator   = (Op . read)      <$> T.operator   assemblerLexer
-whiteSpace = T.whiteSpace                      assemblerLexer
-natural    = (Lit . fromEnum) <$> T.natural    assemblerLexer
-reservedOp = (\x -> ASMdata)  <$> (T.reservedOp assemblerLexer $ "DATA")
+identifier = T.identifier assemblerLexer
+operator   = T.operator   assemblerLexer
+whiteSpace = T.whiteSpace assemblerLexer
+number     = T.integer    assemblerLexer
+
+parseOperator = do s <- operator
+                   case s of ('.':l) -> return $ LabelDef l
+                             "DATA"  -> return ASMdata
+                             _       -> do o <- parseOperand
+                                           return $ Op (read s) o
+
+parseOperand = 
+  foldr1 (<|>) [(Just . Label) <$> identifier, 
+                (Just . Lit . fromInteger) <$> number,
+                whiteSpace >> (return Nothing)
+                ]
+
 
 assemblerParser = do whiteSpace
-                     list <- many (identifier <|> operator <|> natural <|> reservedOp)
+                     list <- many parseOperator
                      eof
                      return list

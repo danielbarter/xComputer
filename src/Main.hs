@@ -7,7 +7,7 @@ import Assembler
 import Text.Parsec (parse)
 
 parseTest :: IO ()
-parseTest = do s <- readFile "programs/test.xasm"
+parseTest = do s <- readFile "programs/multiply.xasm"
                let p = parse assemblerParser "" s
                putStrLn $ show p
 

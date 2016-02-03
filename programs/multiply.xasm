@@ -1,0 +1,34 @@
+.start
+LODC  0
+STO   ans
+
+.loop
+LOD   m
+JMZ   done
+SHR
+STO   m
+JMF   doadd
+
+.shift
+LOD   n
+SHL
+STO   n
+JMP   loop
+
+.doadd
+LOD   n
+ADD   ans
+STO   ans
+JMP   shift
+
+.done
+HLT
+
+.n
+DATA
+
+.m
+DATA
+
+.ans
+DATA
