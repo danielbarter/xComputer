@@ -40,6 +40,6 @@ group n l  = h : (group n t)
 
 ppComputerState' :: XComputerState -> Doc
 ppComputerState' (x,y,flag,ac,count,pc,ir,addr,mem) = 
-  (foldr1 (\x y -> x <+> text "    " <+> y) [ppX x, ppY y, ppFLAG flag, ppAC ac, ppPC pc, ppIR ir]) $$ char ' ' $$ ppMEM mem 
+  (foldr1 (\x y -> x <+> text "    " <+> y) [ppX x, ppY y, ppFLAG flag, ppAC ac, ppPC pc, ppIR ir]) $$  ppMEM mem $$ char ' ' 
 
 ppComputerState = render . ppComputerState'
