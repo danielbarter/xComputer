@@ -2,12 +2,12 @@
 
 module AssemblerTranslator (produceMemoryMap) where
 
-import Machine (Instruction(..))
+import Machine (Instruction(..), word10toword16, MEM)
 import Control.Monad.State.Lazy
 import AssemblerParser (Operand(..), ASM(..))
 import Data.Word.Odd
 import Data.Map
-
+import Data.Word
 
 type FocusList = ([(Word10,ASM)], [ASM])
 type LabelTable = Map Operand Word10
@@ -29,8 +29,8 @@ moveToEnd = do (w,(l,r),m) <- get
                case r of [] -> return ()
                          _  -> moveRight' >> moveToEnd
 
---produceMemoryMap :: [ASM] -> Word10 -> [(Word10,Word16)]
-produceMemoryMap p s = [ (k, translateASM a) | (k,a) <- l ]
+produceMemoryChunk :: [ASM] -> Word10 -> [(Word10,Word16)]
+produceMemoryChunk p s = [ (k, translateASM a) | (k,a) <- l ]
   where (e,(l,r),m) = execState moveToEnd $ initial p s
         t o = case o of Label word -> m ! o -- translateOperand
                         Lit n      -> toEnum n
@@ -68,5 +68,9 @@ produceMemoryMap p s = [ (k, translateASM a) | (k,a) <- l ]
                               | i == JMNI = g 0b101110 y
                               | i == JMFI = g 0b101111 y
         f = 2^10
-        g n y = case y of Just o  -> n * f + (t o)
+        g n y = case y of Just o  -> n * f + (word10toword16 $ t o)
                           Nothing -> n * f
+
+
+produceMemoryMap :: [ASM] -> Word10 -> MEM
+produceMemoryMap p s = fromList $ produceMemoryChunk p s

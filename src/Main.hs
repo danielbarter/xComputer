@@ -8,7 +8,7 @@ import AssemblerTranslator
 import Text.Parsec (parse)
 
 parseTest :: IO ()
-parseTest = do s <- readFile "programs/multiply.xasm"
+parseTest = do s <- readFile "programs/test.xasm"
                let o = parse assemblerParser "" s
                case o of Left e  -> putStrLn $ show e
                          Right p -> putStrLn $ show $ produceMemoryMap p 0

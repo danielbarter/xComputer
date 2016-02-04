@@ -13,7 +13,8 @@ module Machine (
                Instruction(..),
                XComputerState,
                Step,
-               cycle
+               cycle,
+               word10toword16
                ) where
 
 import Prelude hiding (cycle)
