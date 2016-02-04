@@ -10,7 +10,7 @@ module Machine (
                IR,
                ADDR,
                MEM,
-               Instruction,
+               Instruction(..),
                XComputerState,
                Step,
                cycle
