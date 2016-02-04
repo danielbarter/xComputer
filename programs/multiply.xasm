@@ -1,3 +1,9 @@
+LODC  6
+STO   n
+
+LODC  4
+STO   m
+
 .start
 LODC  0
 STO   ans
