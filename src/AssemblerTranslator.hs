@@ -32,8 +32,8 @@ moveToEnd = do (w,(l,r),m) <- get
 produceMemoryChunk :: [ASM] -> Word10 -> [(Word10,Word16)]
 produceMemoryChunk p s = [ (k, translateASM a) | (k,a) <- l ]
   where (e,(l,r),m) = execState moveToEnd $ initial p s
-        t o = case o of Label word -> m ! o -- translateOperand
-                        Lit n      -> toEnum n
+        translateOperand o = case o of Label word -> m ! o
+                                       Lit n      -> toEnum n
 
         translateASM ASMdata = 0
         translateASM (Op i y) | i == ADD  = g 0b000000 y
@@ -68,9 +68,13 @@ produceMemoryChunk p s = [ (k, translateASM a) | (k,a) <- l ]
                               | i == JMNI = g 0b101110 y
                               | i == JMFI = g 0b101111 y
         f = 2^10
-        g n y = case y of Just o  -> n * f + (word10toword16 $ t o)
+        g n y = case y of Just o  -> n * f + (word10toword16 $ translateOperand o)
                           Nothing -> n * f
 
 
+produceMemoryMap' :: [ASM] -> Word10 -> MEM
+produceMemoryMap' p s = fromList $ produceMemoryChunk p s
+
 produceMemoryMap :: [ASM] -> Word10 -> MEM
-produceMemoryMap p s = fromList $ produceMemoryChunk p s
+produceMemoryMap p s = union m $ fromList $ zip [0,1..1023] [0,0..]
+  where m = produceMemoryMap' p s

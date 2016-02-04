@@ -3,6 +3,9 @@ STO   num
 LODC  0
 STO   ans
 
+
+
+
 .loop
 LOD  ans
 ADD  num

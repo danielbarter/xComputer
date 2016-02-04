@@ -15,9 +15,15 @@ cabal-version:       >=1.10
 executable xComputer
   hs-source-dirs:      src
   main-is:             Main.hs
+  other-modules:       AssemblerParser,
+                       AssemblerTranslator,
+                       Machine,
+                       PpComputerState
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5,
                        OddWord == 1.0.1.0,
                        containers == 0.*,
                        mtl >= 2.0 && < 3.0,
-                       parsec == 3.*
+                       parsec == 3.*,
+                       pretty == 1.*
+
